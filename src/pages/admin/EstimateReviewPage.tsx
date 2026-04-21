@@ -101,7 +101,7 @@ function EstimateCard({ booking, onOverride }: { booking: Booking; onOverride: (
         className="w-full btn-primary text-sm flex items-center justify-center gap-1.5"
       >
         <Edit2 size={14} />
-        Override & Approve Estimate
+        Review & Approve Estimate
       </button>
     </div>
   );
@@ -130,7 +130,7 @@ function OverrideModal({ booking, onClose }: { booking: Booking; onClose: () => 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
         <div className="p-5 border-b flex items-center justify-between">
-          <h3 className="font-semibold text-slate-900">Override Estimate</h3>
+          <h3 className="font-semibold text-slate-900">Review AI Estimate</h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100"><X size={18} /></button>
         </div>
         <div className="p-5 space-y-4">
@@ -177,7 +177,7 @@ function OverrideModal({ booking, onClose }: { booking: Booking; onClose: () => 
             className="btn-primary text-sm flex items-center gap-1.5"
           >
             {approve.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-            Approve Estimate
+            Save Changes & Approve
           </button>
         </div>
       </div>
@@ -211,13 +211,13 @@ export default function EstimateReviewPage() {
         <div className="card text-center py-12">
           <CheckCircle size={40} className="mx-auto text-green-400 mb-3" />
           <p className="text-slate-700 font-semibold">All caught up!</p>
-          <p className="text-slate-400 text-sm mt-1">No estimates pending manual review</p>
+          <p className="text-slate-400 text-sm mt-1">No AI estimates waiting for approval</p>
         </div>
       ) : (
         <>
           <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
             <AlertTriangle size={16} />
-            <span><strong>{bookings.length}</strong> booking{bookings.length > 1 ? 's' : ''} pending review — AI confidence was below threshold</span>
+            <span><strong>{bookings.length}</strong> booking{bookings.length > 1 ? 's' : ''} awaiting admin approval for AI-generated estimates</span>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {bookings.map((b) => (

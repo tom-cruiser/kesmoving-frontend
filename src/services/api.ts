@@ -109,9 +109,30 @@ export const estimateApi = {
     api.post('/estimate/analyze', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   analyzePhotoUrls: (data: { photoUrls: string[]; moveSize?: string; distance?: number }) =>
     api.post('/estimate/analyze', data),
-  review: (bookingId: string, data: { estimatedPrice?: number; reviewNotes?: string; confirm?: boolean }) =>
+  review: (
+    bookingId: string,
+    data: {
+      estimatedPrice?: number;
+      estimatedVolume?: number;
+      loadingTime?: number;
+      recommendedTruck?: string;
+      reviewNotes?: string;
+      notes?: string;
+      confirm?: boolean;
+    },
+  ) =>
     api.put(`/estimate/${bookingId}/review`, data),
-  approveManual: (bookingId: string, data: object) =>
+  approveManual: (
+    bookingId: string,
+    data: {
+      estimatedPrice?: number;
+      estimatedVolume?: number;
+      loadingTime?: number;
+      recommendedTruck?: string;
+      notes?: string;
+      reviewNotes?: string;
+    },
+  ) =>
     api.put(`/estimate/${bookingId}/review`, { ...data, confirm: true }),
   getPendingReview: (params?: object) => api.get('/bookings', { params: { needsManualReview: true, ...params } }),
 };
