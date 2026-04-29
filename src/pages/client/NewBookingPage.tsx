@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { useCreateBooking } from '../../hooks/useBookings';
 import { estimateApi } from '../../services/api';
-import { ChevronRight, ChevronLeft, Upload, X, Loader2, CheckCircle, AlertTriangle, MapPin, Calendar, Users, Package } from 'lucide-react';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { uploadFilesToImageKit } from '../../services/imagekit';
+import { ChevronRight, ChevronLeft, Upload, X, Loader2, CheckCircle, AlertTriangle, MapPin, Calendar, Package } from 'lucide-react';
 import type { AIEstimate } from '../../types';
 
 type Step = 1 | 2 | 3 | 4;
@@ -33,7 +33,6 @@ export default function NewBookingPage() {
   const [estimate, setEstimate] = useState<AIEstimate | null>(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
   const [estimateError, setEstimateError] = useState('');
-  const photosUploaded = useRef(false);
 
   const [form, setForm] = useState<FormData>({
     pickupAddress: { ...emptyAddress },
@@ -52,7 +51,12 @@ export default function NewBookingPage() {
     accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
     maxFiles: 20,
     maxSize: 10 * 1024 * 1024,
-    onDrop: (accepted) => setPhotos((prev) => [...prev, ...accepted].slice(0, 20)),
+    onDrop: (accepted) => {
+      setPhotos((prev) => [...prev, ...accepted].slice(0, 20));
+      setUploadedUrls([]);
+      setEstimate(null);
+      setEstimateError('');
+    },
   });
 
   const setAddress = (field: 'pickupAddress' | 'destinationAddress', key: string, value: string | boolean) => {
@@ -68,16 +72,34 @@ export default function NewBookingPage() {
     setEstimateLoading(true);
     setEstimateError('');
     try {
-      // Send photos directly to the stateless analyze endpoint
-      const fd = new FormData();
-      photos.forEach((p) => fd.append('photos', p));
-      const res = await estimateApi.analyzePhotos(fd);
-      const { photoUrls, ...estimateData } = res.data.data;
+      const photoUrls = await uploadFilesToImageKit(photos);
+      setUploadedUrls(photoUrls);
+
+      const res = await estimateApi.analyzePhotoUrls({
+        photoUrls,
+        moveSize: form.moveSize,
+        distance: undefined,
+        numberOfBedrooms: parseInt(form.numberOfBedrooms) || 1,
+        moveDate: form.moveDate,
+        notes: form.notes,
+        pickup: {
+          address: `${form.pickupAddress.street}, ${form.pickupAddress.city}`,
+          province: form.pickupAddress.province,
+          elevator: form.pickupAddress.hasElevator,
+        },
+        destination: {
+          address: `${form.destinationAddress.street}, ${form.destinationAddress.city}`,
+          province: form.destinationAddress.province,
+          elevator: form.destinationAddress.hasElevator,
+          floor: Number(form.destinationAddress.floorNumber) || 1,
+        },
+      });
+      const { photoUrls: returnedPhotoUrls, ...estimateData } = res.data.data;
       setEstimate(estimateData);
-      if (photoUrls?.length) setUploadedUrls(photoUrls);
-      photosUploaded.current = true;
-    } catch {
-      setEstimateError('Could not analyze photos. You can still proceed and our team will review manually.');
+      if (returnedPhotoUrls?.length) setUploadedUrls(returnedPhotoUrls);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not upload and analyze photos.';
+      setEstimateError(`${message} You can still proceed and our team will review manually.`);
       setEstimate({ itemsDetected: [], estimatedVolume: 0, estimatedWeight: 0, loadingTime: 0, aiConfidence: 0, recommendedTruck: 'Medium Truck', estimatedPrice: 0, needsManualReview: true, rawAiResponse: '' });
     } finally {
       setEstimateLoading(false);
@@ -86,15 +108,36 @@ export default function NewBookingPage() {
   };
 
   const handleSubmit = async () => {
+    // Clean addresses: extract only fields defined in addressSchema
+    const pickupAddressClean = {
+      street: form.pickupAddress.street,
+      city: form.pickupAddress.city,
+      province: form.pickupAddress.province,
+      postalCode: form.pickupAddress.postalCode,
+      country: form.pickupAddress.country,
+    };
+    
+    const destinationAddressClean = {
+      street: form.destinationAddress.street,
+      city: form.destinationAddress.city,
+      province: form.destinationAddress.province,
+      postalCode: form.destinationAddress.postalCode,
+      country: form.destinationAddress.country,
+    };
+
     const payload: Record<string, unknown> = {
-      pickupAddress: form.pickupAddress,
-      destinationAddress: form.destinationAddress,
+      pickupAddress: pickupAddressClean,
+      destinationAddress: destinationAddressClean,
+      floorDetails: {
+        pickupFloor: form.pickupAddress.floorNumber ? parseInt(form.pickupAddress.floorNumber) : undefined,
+        destinationFloor: form.destinationAddress.floorNumber ? parseInt(form.destinationAddress.floorNumber) : undefined,
+        hasElevator: form.destinationAddress.hasElevator,
+      },
       moveDate: form.moveDate,
       moveSize: form.moveSize,
       numberOfBedrooms: parseInt(form.numberOfBedrooms) || 0,
       specialItems: form.specialItems.split('\n').filter(Boolean),
       notes: form.notes,
-      contactPhone: form.contactPhone,
     };
     if (uploadedUrls.length) payload.itemPhotos = uploadedUrls;
     if (estimate) payload.aiEstimate = estimate;
@@ -107,7 +150,7 @@ export default function NewBookingPage() {
     }
   };
 
-  const AddressFields = ({ field, label }: { field: 'pickupAddress' | 'destinationAddress'; label: string }) => (
+  const renderAddressFields = (field: 'pickupAddress' | 'destinationAddress', label: string) => (
     <div className="space-y-3">
       <h3 className="font-semibold text-slate-800 flex items-center gap-2">
         <MapPin size={16} className="text-primary-500" /> {label}
@@ -159,9 +202,9 @@ export default function NewBookingPage() {
       <div className="card">
         {step === 1 && (
           <div className="space-y-6">
-            <AddressFields field="pickupAddress" label="Pickup Address" />
+            {renderAddressFields('pickupAddress', 'Pickup Address')}
             <hr />
-            <AddressFields field="destinationAddress" label="Destination Address" />
+            {renderAddressFields('destinationAddress', 'Destination Address')}
           </div>
         )}
 
@@ -257,9 +300,9 @@ export default function NewBookingPage() {
                     </span>
                   )}
                 </div>
-                {estimate.estimatedPrice > 0 && (
+                {(estimate.estimatedPrice ?? 0) > 0 && (
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><span className="text-slate-500">Estimated price</span><p className="font-bold text-lg text-slate-900">${estimate.estimatedPrice.toLocaleString()}</p></div>
+                    <div><span className="text-slate-500">Estimated price</span><p className="font-bold text-lg text-slate-900">${(estimate.estimatedPrice ?? 0).toLocaleString()}</p></div>
                     <div><span className="text-slate-500">Recommended truck</span><p className="font-semibold text-slate-800">{estimate.recommendedTruck}</p></div>
                     <div><span className="text-slate-500">Volume</span><p className="font-semibold">{estimate.estimatedVolume} cu ft</p></div>
                     <div><span className="text-slate-500">Est. loading time</span><p className="font-semibold">{estimate.loadingTime}h</p></div>
