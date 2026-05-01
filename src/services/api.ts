@@ -120,7 +120,7 @@ export const estimateApi = {
     numberOfBedrooms?: number;
     moveDate?: string;
     notes?: string;
-    pickup?: { address?: string; province?: string; elevator?: boolean };
+    pickup?: { address?: string; province?: string; elevator?: boolean; floor?: number };
     destination?: { address?: string; province?: string; elevator?: boolean; floor?: number };
   }) =>
     api.post('/estimate/analyze', data),
