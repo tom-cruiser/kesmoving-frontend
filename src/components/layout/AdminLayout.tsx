@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   Truck, LayoutDashboard, Calendar, MapPin, Users, BarChart2,
-  MessageCircle, LogOut, Bell, Menu, X, ClipboardCheck, ChevronRight,
+  MessageCircle, LogOut, Bell, Menu, X, ClipboardCheck, ChevronRight, Activity,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../services/api';
@@ -17,6 +17,7 @@ const navLinks = [
   { to: '/admin/chat', label: 'Support Chat', icon: MessageCircle },
   { to: '/admin/staff', label: 'Staff', icon: Users },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
+  { to: '/admin/activity', label: 'Activity', icon: Activity },
 ];
 
 export default function AdminLayout() {

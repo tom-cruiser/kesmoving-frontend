@@ -28,6 +28,7 @@ import StaffManagementPage from './pages/admin/StaffManagementPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import AdminChatPage from './pages/admin/AdminChatPage';
 import EstimateReviewPage from './pages/admin/EstimateReviewPage';
+import ActivityPage from './pages/admin/ActivityPage';
 
 import type { Role } from './types';
 
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/chat" element={<AdminChatPage />} />
         <Route path="/admin/estimates" element={<EstimateReviewPage />} />
+        <Route path="/admin/activity" element={<ActivityPage />} />
       </Route>
 
       {/* Root redirect */}

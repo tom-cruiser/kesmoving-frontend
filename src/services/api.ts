@@ -66,6 +66,11 @@ export const authApi = {
 };
 
 // ─── Users (admin operations) ────────────────────────────────────────────────
+// ─── Activity Log ─────────────────────────────────────────────────────────────
+export const activityApi = {
+  getAll: (params?: object) => api.get('/activity', { params }),
+};
+
 export const userApi = {
   getAll: (params?: object) => api.get('/auth/users', { params }),
   updateRole: (id: string, role: string) => api.put(`/auth/users/${id}/role`, { role }),
