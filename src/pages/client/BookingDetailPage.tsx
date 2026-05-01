@@ -5,7 +5,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import DateDisplay from '../../components/common/DateDisplay';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { MapPin, Calendar, Truck, Users, Package, CheckCircle, Clock, AlertTriangle, ArrowLeft, Star, MessageCircle, XCircle, Pencil, Trash2, X, Loader2 } from 'lucide-react';
-import type { Booking } from '../../types';
+import type { Booking, ItemPhoto } from '../../types';
 
 // ─── Cancel Modal ──────────────────────────────────────────────────────────────
 function CancelModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
@@ -218,7 +218,7 @@ export default function BookingDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
-  if (isLoading) return <div className="flex justify-center py-16"><LoadingSpinner size="lg" /></div>;
+  if (isLoading) return <div className="flex justify-center py-16"><LoadingSpinner size={32} /></div>;
   if (error || !booking) return (
     <div className="card text-center py-12">
       <AlertTriangle size={40} className="mx-auto text-amber-400 mb-3" />
@@ -301,19 +301,19 @@ export default function BookingDetailPage() {
             <p className="text-xs text-slate-500 mb-1">PICKUP</p>
             <p className="font-medium text-slate-900">{booking.pickupAddress.street}</p>
             <p className="text-sm text-slate-600">{booking.pickupAddress.city}, {booking.pickupAddress.province} {booking.pickupAddress.postalCode}</p>
-            {booking.pickupAddress.floorNumber && <p className="text-sm text-slate-500">Floor {booking.pickupAddress.floorNumber}</p>}
+            {booking.pickupAddress.floorNumber != null && <p className="text-sm text-slate-500">Floor {booking.pickupAddress.floorNumber}</p>}
           </div>
           <div className="bg-slate-50 rounded-xl p-3">
             <p className="text-xs text-slate-500 mb-1">DESTINATION</p>
             <p className="font-medium text-slate-900">{booking.destinationAddress.street}</p>
             <p className="text-sm text-slate-600">{booking.destinationAddress.city}, {booking.destinationAddress.province} {booking.destinationAddress.postalCode}</p>
-            {booking.destinationAddress.floorNumber && <p className="text-sm text-slate-500">Floor {booking.destinationAddress.floorNumber}</p>}
+            {booking.destinationAddress.floorNumber != null && <p className="text-sm text-slate-500">Floor {booking.destinationAddress.floorNumber}</p>}
           </div>
         </div>
         <div className="flex flex-wrap gap-4 mt-4 text-sm text-slate-600 border-t pt-4">
           <span className="flex items-center gap-1.5"><Calendar size={14} /><DateDisplay date={booking.moveDate} format="PPpp" /></span>
-          <span className="flex items-center gap-1.5"><Package size={14} />{booking.moveSize}</span>
-          {booking.numberOfBedrooms > 0 && <span>{booking.numberOfBedrooms} bedroom{booking.numberOfBedrooms > 1 ? 's' : ''}</span>}
+          <span className="flex items-center gap-1.5"><Package size={14} />{booking.moveSize || booking.moveType}</span>
+          {(booking.numberOfBedrooms ?? 0) > 0 && <span>{booking.numberOfBedrooms} bedroom{(booking.numberOfBedrooms ?? 0) > 1 ? 's' : ''}</span>}
         </div>
       </div>
 
@@ -328,7 +328,7 @@ export default function BookingDetailPage() {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-primary-50 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-primary-700">${booking.aiEstimate.estimatedPrice.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-primary-700">${(booking.aiEstimate.estimatedPrice ?? 0).toLocaleString()}</p>
               <p className="text-xs text-primary-600 mt-0.5">Estimated Price</p>
             </div>
             <div className="bg-slate-50 rounded-xl p-3 text-center">
@@ -363,7 +363,7 @@ export default function BookingDetailPage() {
             {booking.crewAssignment.truck && (
               <div className="flex items-center gap-2 text-slate-600">
                 <Truck size={14} className="text-slate-400" />
-                Truck: <span className="font-medium text-slate-800">{booking.crewAssignment.truck}</span>
+                Truck: <span className="font-medium text-slate-800">{booking.crewAssignment.truck.licensePlate || booking.crewAssignment.truck.name || 'Assigned'}</span>
               </div>
             )}
           </div>
@@ -375,9 +375,10 @@ export default function BookingDetailPage() {
         <div className="card">
           <h2 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Package size={16} className="text-primary-500" /> Item Photos</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            {booking.itemPhotos.map((url, i) => (
-              <img key={i} src={url} alt={`Item ${i + 1}`} className="w-full h-24 object-cover rounded-lg" />
-            ))}
+            {booking.itemPhotos.map((photo, i) => {
+              const src = typeof photo === 'string' ? photo : (photo as ItemPhoto).url;
+              return <img key={i} src={src} alt={`Item ${i + 1}`} className="w-full h-24 object-cover rounded-lg" />;
+            })}
           </div>
         </div>
       )}
@@ -407,7 +408,7 @@ export default function BookingDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{entry.status}</p>
                   {entry.note && <p className="text-xs text-slate-500 mt-0.5">{entry.note}</p>}
-                  <p className="text-xs text-slate-400 mt-0.5"><DateDisplay date={entry.timestamp} format="PPpp" /></p>
+                  <p className="text-xs text-slate-400 mt-0.5"><DateDisplay date={entry.timestamp || entry.changedAt} format="PPpp" /></p>
                 </div>
               </div>
             ))}

@@ -7,7 +7,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import DateDisplay from '../../components/common/DateDisplay';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { Search, Filter, X, Loader2, Users, MapPin, Trash2, Pencil, XCircle } from 'lucide-react';
-import type { Booking, BookingStatus, User } from '../../types';
+import type { Booking, BookingStatus, User, Truck } from '../../types';
 import toast from 'react-hot-toast';
 
 const STATUSES: BookingStatus[] = ['Pending','Confirmed','Scheduled','InProgress','Completed','Cancelled'];
@@ -28,7 +28,7 @@ function AssignCrewModal({ booking, onClose }: AssignCrewModal & { onClose: () =
   const [driverId, setDriverId] = useState('');
   const [scheduledDate, setScheduledDate] = useState(booking.moveDate ? new Date(booking.moveDate).toISOString().slice(0, 16) : '');
 
-  const trucks = fleetData?.data?.filter((t) => t.status === 'Available') || [];
+  const trucks: Truck[] = (fleetData?.data || []).filter((t: Truck) => t.status === 'Available');
   const drivers: User[] = staffData?.data?.data || [];
 
   const handleAssign = async () => {
@@ -375,7 +375,7 @@ export default function BookingsManagementPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-slate-600"><DateDisplay date={b.moveDate} /></td>
-                    <td className="px-4 py-3 text-slate-600">{b.moveSize}</td>
+                    <td className="px-4 py-3 text-slate-600">{b.moveSize || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="relative group inline-block">
                         <StatusBadge status={b.status} />

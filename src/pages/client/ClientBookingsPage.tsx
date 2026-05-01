@@ -21,7 +21,7 @@ export default function ClientBookingsPage() {
   const { data, isLoading } = useBookings({ status: status || undefined, page, limit: 10 });
   const cancelMutation = useCancelBooking();
   const deleteMutation = useDeleteBooking();
-  const bookings = data?.data || [];
+  const bookings: Booking[] = data?.data || [];
   const pagination = data?.pagination;
 
   const filtered = search.trim()
@@ -178,7 +178,7 @@ export default function ClientBookingsPage() {
                     ) : (
                       <p className="text-sm text-slate-400">Price TBD</p>
                     )}
-                    <p className="text-xs text-slate-400 mt-0.5">{booking.moveSize}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{booking.moveSize || booking.moveType}</p>
                   </div>
                   {/* Inline action buttons for Pending bookings */}
                   {['Pending', 'Confirmed'].includes(booking.status) && (

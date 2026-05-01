@@ -70,6 +70,7 @@ export const userApi = {
   getAll: (params?: object) => api.get('/auth/users', { params }),
   updateRole: (id: string, role: string) => api.put(`/auth/users/${id}/role`, { role }),
   setActive: (id: string, isActive: boolean) => api.put(`/auth/users/${id}/role`, { isActive }),
+  resetPassword: (id: string, password: string) => api.put(`/auth/users/${id}/password`, { password }),
 };
 
 // ─── Bookings ────────────────────────────────────────────────────────────────
@@ -107,7 +108,16 @@ export const estimateApi = {
   generate: (bookingId: string) => api.post('/estimate', { bookingId }),
   analyzePhotos: (formData: FormData) =>
     api.post('/estimate/analyze', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  analyzePhotoUrls: (data: { photoUrls: string[]; moveSize?: string; distance?: number }) =>
+  analyzePhotoUrls: (data: {
+    photoUrls: string[];
+    moveSize?: string;
+    distance?: number;
+    numberOfBedrooms?: number;
+    moveDate?: string;
+    notes?: string;
+    pickup?: { address?: string; province?: string; elevator?: boolean };
+    destination?: { address?: string; province?: string; elevator?: boolean; floor?: number };
+  }) =>
     api.post('/estimate/analyze', data),
   review: (
     bookingId: string,

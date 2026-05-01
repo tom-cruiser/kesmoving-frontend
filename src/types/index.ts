@@ -46,6 +46,8 @@ export interface Address {
   province: string;
   postalCode: string;
   country?: string;
+  floorNumber?: number;
+  hasElevator?: boolean;
   coordinates?: { lat: number; lng: number };
 }
 
@@ -77,6 +79,7 @@ export interface AIEstimate {
   aiConfidence: number;
   estimatedPrice?: number;
   needsManualReview: boolean;
+  rawAiResponse?: string;
   reviewedBy?: Partial<User>;
   reviewedAt?: string;
   reviewNotes?: string;
@@ -93,6 +96,7 @@ export interface CrewAssignment {
 export interface BookingTimeline {
   status: BookingStatus;
   changedAt: string;
+  timestamp?: string;
   changedBy?: Partial<User>;
   note?: string;
 }
@@ -107,7 +111,10 @@ export interface Booking {
   moveTime?: string;
   status: BookingStatus;
   moveType: MoveType;
-  itemPhotos: ItemPhoto[];
+  moveSize?: string;
+  numberOfBedrooms?: number;
+  specialItems?: string[];
+  itemPhotos: Array<ItemPhoto | string>;
   aiEstimate?: AIEstimate;
   crewAssignment?: CrewAssignment;
   specialInstructions?: string;

@@ -6,6 +6,7 @@ import { TrendingUp, Users, Truck, Calendar, DollarSign, Clock, ArrowRight, Chec
 import StatusBadge from '../../components/common/StatusBadge';
 import DateDisplay from '../../components/common/DateDisplay';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import type { Booking, Truck as FleetTruck } from '../../types';
 
 function StatCard({ label, value, sub, icon: Icon, color }: { label: string; value: string | number; sub?: string; icon: React.ElementType; color: string }) {
   return (
@@ -29,8 +30,8 @@ export default function AdminDashboard() {
   const { data: fleetData } = useFleet();
 
   const overview = analytics?.data;
-  const bookings = bookingsData?.data || [];
-  const trucks = fleetData?.data || [];
+  const bookings: Booking[] = bookingsData?.data || [];
+  const trucks: FleetTruck[] = fleetData?.data || [];
 
   const availableTrucks = trucks.filter((t) => t.status === 'Available').length;
   const activeTrucks = trucks.filter((t) => t.status === 'InUse').length;

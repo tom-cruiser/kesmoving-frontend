@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { estimateApi } from '../../services/api';
 import { CheckCircle, AlertTriangle, Edit2, X, Loader2, Package, ChevronDown, ChevronUp } from 'lucide-react';
-import type { Booking } from '../../types';
+import type { Booking, ItemPhoto } from '../../types';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import DateDisplay from '../../components/common/DateDisplay';
 import toast from 'react-hot-toast';
@@ -20,6 +20,8 @@ const TRUCK_TYPES = ['Small Truck', 'Medium Truck', 'Large Truck', 'Extra Large 
 function EstimateCard({ booking, onOverride }: { booking: Booking; onOverride: (b: Booking) => void }) {
   const [expanded, setExpanded] = useState(false);
   const est = booking.aiEstimate;
+
+  const photoUrl = (photo: string | ItemPhoto) => (typeof photo === 'string' ? photo : photo.url);
 
   return (
     <div className="card">
@@ -89,8 +91,8 @@ function EstimateCard({ booking, onOverride }: { booking: Booking; onOverride: (
         <div className="mb-3">
           <p className="text-xs font-medium text-slate-600 mb-1">Photos ({booking.itemPhotos.length})</p>
           <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {booking.itemPhotos.map((url, i) => (
-              <img key={i} src={url} alt={`Item ${i}`} className="h-16 w-16 object-cover rounded-lg flex-shrink-0" />
+            {booking.itemPhotos.map((photo, i) => (
+              <img key={i} src={photoUrl(photo)} alt={`Item ${i}`} className="h-16 w-16 object-cover rounded-lg flex-shrink-0" />
             ))}
           </div>
         </div>
@@ -136,7 +138,7 @@ function OverrideModal({ booking, onClose }: { booking: Booking; onClose: () => 
         <div className="p-5 space-y-4">
           <div className="bg-slate-50 rounded-xl p-3 text-sm">
             <p className="font-medium">{booking.bookingNumber}</p>
-            <p className="text-slate-500">{booking.pickupAddress.city} → {booking.destinationAddress.city} · {booking.moveSize}</p>
+            <p className="text-slate-500">{booking.pickupAddress.city} → {booking.destinationAddress.city} · {booking.moveSize || booking.moveType}</p>
           </div>
           <div>
             <label className="label">Final Price (CAD)</label>

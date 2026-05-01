@@ -1,13 +1,84 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '../../services/api';
-import { Search, UserPlus, Shield, Check, X, Loader2, Users } from 'lucide-react';
+import { Search, Check, X, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
 import type { User, Role } from '../../types';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import DateDisplay from '../../components/common/DateDisplay';
 import toast from 'react-hot-toast';
 
 const ALL_ROLES: Role[] = ['Admin','OperationsManager','CustomerService','Sales','Driver','Mover','WarehouseWorker','Packer','QualityAssurance','ITSupport','Marketing','Client'];
+
+function ResetPasswordModal({ user, onClose }: { user: User; onClose: () => void }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [showPw, setShowPw] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () => userApi.resetPassword(user._id, password),
+    onSuccess: () => { toast.success(`Password updated for ${user.firstName}`); onClose(); },
+    onError: () => toast.error('Failed to update password'),
+  });
+
+  const valid = password.length >= 8 && password === confirm;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+            <KeyRound size={16} className="text-primary-500" /> Reset Password
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+        </div>
+        <p className="text-sm text-slate-500">
+          Setting a new password for <span className="font-medium text-slate-700">{user.firstName} {user.lastName}</span> ({user.email})
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="label">New Password</label>
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                className="input pr-10"
+                placeholder="Min. 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="label">Confirm Password</label>
+            <input
+              type={showPw ? 'text' : 'password'}
+              className="input"
+              placeholder="Repeat password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+            {confirm && password !== confirm && (
+              <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button
+            onClick={() => mutation.mutate()}
+            disabled={!valid || mutation.isPending}
+            className="btn-primary flex-1 disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            {mutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ROLE_COLORS: Record<string, string> = {
   Admin: 'bg-red-100 text-red-700',
@@ -31,6 +102,7 @@ export default function StaffManagementPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<Role | ''>('');
   const [page, setPage] = useState(1);
+  const [resetTarget, setResetTarget] = useState<User | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -126,13 +198,22 @@ export default function StaffManagementPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => toggleActive.mutate({ userId: user._id, isActive: !(user.isActive !== false) })}
-                        className={`text-xs px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 ${user.isActive !== false ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}
-                      >
-                        {user.isActive !== false ? <X size={12} /> : <Check size={12} />}
-                        {user.isActive !== false ? 'Deactivate' : 'Activate'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleActive.mutate({ userId: user._id, isActive: !(user.isActive !== false) })}
+                          className={`text-xs px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 ${user.isActive !== false ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}
+                        >
+                          {user.isActive !== false ? <X size={12} /> : <Check size={12} />}
+                          {user.isActive !== false ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => setResetTarget(user)}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1"
+                        >
+                          <KeyRound size={12} />
+                          Reset PW
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -141,6 +222,8 @@ export default function StaffManagementPage() {
           </div>
         </div>
       )}
+
+      {resetTarget && <ResetPasswordModal user={resetTarget} onClose={() => setResetTarget(null)} />}
 
       {pagination && pagination.pages > 1 && (
         <div className="flex items-center justify-center gap-2">

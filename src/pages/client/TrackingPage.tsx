@@ -27,7 +27,7 @@ export default function TrackingPage() {
   // Initialize Google Maps
   useEffect(() => {
     if (!mapRef.current) return;
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+    const apiKey = (import.meta as ImportMeta & { env?: { VITE_GOOGLE_MAPS_KEY?: string } }).env?.VITE_GOOGLE_MAPS_KEY;
     if (!apiKey) {
       setMapError('Map not configured. Contact support for live tracking.');
       setMapReady(false);

@@ -32,9 +32,9 @@ export default function AnalyticsPage() {
     name: s.name || `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || 'Unknown',
   }));
 
-  const statusBreakdown = overview?.statusBreakdown ?? {};
+  const statusBreakdown = (overview?.statusBreakdown ?? {}) as Record<string, number>;
   const statusDistribution = Object.entries(statusBreakdown)
-    .filter(([, v]) => (v as number) > 0)
+    .filter(([, v]) => v > 0)
     .map(([name, value]) => ({ name, value }));
 
   return (
