@@ -150,6 +150,16 @@ export const estimateApi = {
   ) =>
     api.put(`/estimate/${bookingId}/review`, { ...data, confirm: true }),
   getPendingReview: (params?: object) => api.get('/bookings', { params: { needsManualReview: true, ...params } }),
+  publicQuote: (data: {
+    pickup?: { city?: string; province?: string; elevator?: boolean; floor?: number };
+    destination?: { city?: string; province?: string; elevator?: boolean; floor?: number };
+    bedrooms?: number;
+    moveDate?: string;
+    hasPiano?: boolean;
+    hasPoolTable?: boolean;
+    hasSafe?: boolean;
+    notes?: string;
+  }) => api.post('/estimate/public-quote', data),
 };
 
 // ─── Tracking ────────────────────────────────────────────────────────────────

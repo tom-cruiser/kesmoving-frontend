@@ -1,22 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  CheckCircle, 
-  Shield, 
-  Award, 
-  Users, 
-  TrendingUp,
-  MapPin,
-  Phone,
-  Mail,
-  Zap,
-  Lock,
-  Truck,
-  CheckSquare,
-  ArrowRight,
-  Star,
-  MapPinIcon
-} from 'lucide-react';
+import { CheckCircle, Phone, Mail, Zap, Truck } from 'lucide-react';
 import QuoteForm from '../components/landing/QuoteForm';
 import TrustRibbon from '../components/landing/TrustRibbon';
 import AIInventorySection from '../components/landing/AIInventorySection';
@@ -58,7 +42,7 @@ export default function LandingPage() {
       {/* Hero Section - Split Screen */}
       <section className="relative bg-gradient-to-br from-blue-50 to-indigo-50 py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left Side - Headline and Value Props */}
             <div className="space-y-8">
               <div>
@@ -107,7 +91,7 @@ export default function LandingPage() {
             {/* Right Side - Lead Capture Form */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Your Instant Quote</h2>
-              <p className="text-gray-600 mb-6">No credit card required. Get an accurate estimate in minutes.</p>
+              <p className="text-gray-600 mb-6">Powered by AI. No credit card required.</p>
               <QuoteForm />
             </div>
           </div>
