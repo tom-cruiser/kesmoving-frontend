@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 
 let trackingSocket: Socket | null = null;
 let chatSocket: Socket | null = null;
+let activitySocket: Socket | null = null;
 
 function getToken(): string {
   return localStorage.getItem('token') || '';
@@ -29,9 +30,22 @@ export function getChatSocket(): Socket {
   return chatSocket;
 }
 
+export function getActivitySocket(): Socket {
+  if (!activitySocket || !activitySocket.connected) {
+    activitySocket = io('/activity', {
+      auth: { token: getToken() },
+      transports: ['websocket'],
+      autoConnect: true,
+    });
+  }
+  return activitySocket;
+}
+
 export function disconnectAll(): void {
   trackingSocket?.disconnect();
   chatSocket?.disconnect();
+  activitySocket?.disconnect();
   trackingSocket = null;
   chatSocket = null;
+  activitySocket = null;
 }
