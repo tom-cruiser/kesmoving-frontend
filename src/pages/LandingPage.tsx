@@ -6,7 +6,6 @@ import TrustRibbon from '../components/landing/TrustRibbon';
 import AIInventorySection from '../components/landing/AIInventorySection';
 import ServiceGrid from '../components/landing/ServiceGrid';
 import TransparencySection from '../components/landing/TransparencySection';
-import SocialProofGallery from '../components/landing/SocialProofGallery';
 
 export default function LandingPage() {
   React.useEffect(() => {
@@ -110,8 +109,7 @@ export default function LandingPage() {
       {/* Why Choose Us - Transparency Section */}
       <TransparencySection />
 
-      {/* Social Proof Gallery */}
-      <SocialProofGallery />
+      {/* Social Proof Gallery removed as requested */}
 
       {/* CTA Section */}
       <section className="bg-blue-600 py-16 md:py-20">

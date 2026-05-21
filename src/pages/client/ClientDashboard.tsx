@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Truck, Star, MessageCircle, ArrowRight, Package } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useLandingQuoteStore } from '../../store/landingQuoteStore';
 import { useBookings } from '../../hooks/useBookings';
 import StatusBadge from '../../components/common/StatusBadge';
 import DateDisplay from '../../components/common/DateDisplay';
@@ -11,6 +12,8 @@ export default function ClientDashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { data, isLoading } = useBookings({ limit: 5 });
+  const landingQuote = useLandingQuoteStore((state) => state.estimate);
+  const landingQuoteDetails = useLandingQuoteStore((state) => state.details);
 
   const bookings: Booking[] = data?.data || [];
   const activeBooking = bookings.find((b) => ['Scheduled', 'InProgress', 'Confirmed'].includes(b.status));
@@ -36,6 +39,34 @@ export default function ClientDashboard() {
           </button>
         )}
       </div>
+
+      {landingQuote && landingQuoteDetails && (
+        <div className="card border-l-4 border-l-amber-500 bg-amber-50/60">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-amber-700 uppercase tracking-wide">Your landing page estimate</p>
+              <h2 className="text-xl font-bold text-slate-900 mt-1">
+                ${landingQuote.total_cad.toLocaleString('en-CA', { maximumFractionDigits: 0 })}
+              </h2>
+              <p className="text-sm text-slate-600 mt-1">
+                {landingQuoteDetails.pickupCity}, {landingQuoteDetails.pickupProvince} → {landingQuoteDetails.destinationCity}, {landingQuoteDetails.destinationProvince}
+              </p>
+              <p className="text-sm text-slate-600">
+                {landingQuoteDetails.bedrooms} bedroom{landingQuoteDetails.bedrooms === 1 ? '' : 's'}
+                {landingQuoteDetails.moveDate ? ` · Move date ${landingQuoteDetails.moveDate}` : ''}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button onClick={() => navigate('/bookings/new')} className="btn-primary text-sm">
+                Continue with this quote
+              </button>
+              <button onClick={() => navigate('/bookings/new')} className="btn-secondary text-sm">
+                Add more details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
